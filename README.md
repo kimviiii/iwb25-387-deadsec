@@ -1,93 +1,124 @@
-# Volunteer Match API (Ballerina)
+# Volunteer Match Platform
 
-Connects volunteers with events using a simple matching algorithm (skills, location, availability). Built for a hackathon-ready MVP in **Ballerina**.
-
----
-
-## Why Ballerina
-- HTTP-first services with strong typing for JSON.
-- Built-in OpenAPI support and visual diagrams.
-- Fast to prototype: perfect for a 6-hour MVP.
+A simple platform that connects **event organizers** with **volunteers**, featuring explainable matching, RSVP with capacity checks, and lightweight cloud integration.
 
 ---
 
-## MVP Features
-- Create Events: `POST /events`
-- Register Volunteers: `POST /volunteers`
-- Get Matches: `GET /match?volunteerId=...` → returns top events with a score and “why”.
-- (Optional) RSVP: `POST /rsvp`
+## 🌍 Problem & Solution
+
+**Problem**  
+Event organizers often struggle to find the right volunteers quickly, while volunteers don’t know which opportunities truly fit their skills, time, and location.
+
+**Solution**  
+Volunteer Match makes it easy for organizers to post events and for volunteers to register, browse, and get ranked matches. Our matching algorithm is **transparent**: it explains *why* a volunteer is a good fit — increasing trust and fairness.
 
 ---
 
-## Data Models (v1)
+## ⚙️ Tech Stack
 
-```jsonc
-// Event
-{
-  "id": "auto-generated",
-  "title": "string",
-  "description": "string",
-  "date": "YYYY-MM-DD",
-  "location": "string",             // city
-  "skills": ["string"],
-  "slots": 0                        // remaining slots
-}
+- **Backend**: [Ballerina](https://ballerina.io/) (HTTP service, OpenAPI, JSON)
+- **Database**:  
+  - **MongoDB Atlas Free Tier** via [Data API](https://www.mongodb.com/atlas/database)  
+  - Fallbacks: **in-memory** & **fileJson** (for local/demo use)
+- **Frontend**: React + Vite (TypeScript `.tsx` components) — can scaffold with [Lovable](https://lovable.dev/)
+- **Infra/DevX**: Docker, GitHub Actions (build + test), Postman collection
+- **Docs**: OpenAPI spec, Postman, Architecture diagram
 
-// Volunteer
-{
-  "id": "auto-generated",
-  "name": "string",
-  "skills": ["string"],
-  "location": "string",
-  "availability": "YYYY-MM-DD"
-}
+---
 
-// MatchResult (response item)
-{
-  "eventId": "string",
-  "score": 0,
-  "why": "string"
-}
+## 📡 API Endpoints
 
-API Endpoints (MVP)
+### Health
+- `GET /health`
 
-POST /events
-Body: Event (without id)
+### Events
+- `POST /events`
+- `GET /events`
+- `GET /events/{id}`
 
-201 → created event
+### Volunteers
+- `POST /volunteers`
+- `GET /volunteers`
+- `GET /volunteers/{id}`
 
-400 → validation error
+### Matching
+- `GET /match?volunteerId=...`
 
-POST /volunteers
-Body: Volunteer (without id)
+### RSVP
+- `POST /rsvp`
+- `GET /rsvps`
 
-201 → created volunteer
+### Utilities
+- `GET /export`
+- `POST /reset` (dev/demo only)
 
-400 → validation error
+---
 
-GET /match?volunteerId={id}
+## 🔍 Matching v2
 
-200 → { "volunteerId": "...", "matches": [ MatchResult, ... ] }
+Matches are scored with transparent weights:
 
-404 → volunteer not found
+- **+4** per overlapping skill (case-insensitive)  
+- **+5** if same city  
+- **+3** if date matches (exact or ±1 day)  
+- **+1** bonus if event slots > 0  
 
-200 with empty list → no suitable matches
+Example:  
+`2 skills (+8), same city (+5), date match (+3) = 16`
 
-POST /rsvp (nice-to-have)
-Body: { "volunteerId": "...", "eventId": "..." }
+The API returns the **top 5 matches with breakdowns**.
 
-200 → success or “event full”
+---
 
-404 → not found
+## 🚀 Quickstart
 
-Matching Logic (v1)
+### 1. Run in Local Demo Mode (inMemory/fileJson)
+```bash
+git clone https://github.com/YOUR-ORG/volunteer-match.git
+cd volunteer-match
+bal run
+```
 
-Score =
+Visit: [http://localhost:8090/health](http://localhost:8090/health)  
+→ should return `{ "status": "ok" }`
 
-+2 per overlapping skill (case-insensitive)
+---
 
-+3 if same city
+### 2. Run with Docker
+```bash
+docker build -t volunteer-match .
+docker run -p 8090:8090 volunteer-match
+```
 
-+2 if event date equals volunteer availability
+---
 
-Return top 5 by score (desc) and include a short why string.
+### 3. Connect to MongoDB Atlas
+Set env vars (from your Atlas project):
+```bash
+USE_ATLAS=true
+ATLAS_DATA_API_BASE=https://data.mongodb-api.com/app/<app-id>/endpoint/data/v1
+ATLAS_API_KEY=xxxxxxxxxxxxxxxx
+ATLAS_PROJECT_ID=xxxxxxxxxxxxxxxx
+ATLAS_DB=volunteer_match
+ATLAS_CLUSTER=Cluster0
+```
+
+Run again:
+```bash
+bal run
+```
+
+---
+
+## 📂 Repo Structure
+```
+/backend      → Ballerina service + repos (inMemory, fileJson, atlasRepo)
+/frontend     → React (Vite, TSX)
+/postman      → Postman collection
+/archive      → Old code & experiments
+```
+
+---
+
+## 📝 License
+MIT

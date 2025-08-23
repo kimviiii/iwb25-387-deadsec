@@ -1,0 +1,13 @@
+# This file defines who reviews what in the repository.
+
+# Backend (Ballerina service)
+/backend/ @your-github-username
+
+# Frontend (React + TSX)
+/frontend/ @teammate-username
+
+# Docs
+/*.md @your-github-username
+
+# CI/CD and Infra
+/.github/ @your-github-username
