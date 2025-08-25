@@ -1,14 +1,45 @@
 import ballerina/io;
 import ballerina/http;
 
-// Initialize repositories with in-memory implementations
+// Configuration
+configurable boolean USE_ATLAS = false;
+
+// Global repository variables
 EventsRepo eventsRepo = new InMemoryEventsRepo();
 VolunteersRepo volunteersRepo = new InMemoryVolunteersRepo();
 RsvpsRepo rsvpsRepo = new InMemoryRsvpsRepo();
 
 public function main() returns error? {
-    // Log which repositories are being used
-    io:println("InMemory repos initialized ✅");
+    // Check configuration and initialize Atlas repositories if needed
+    if USE_ATLAS {
+        io:println("🔄 Initializing MongoDB Atlas repos...");
+        eventsRepo = new MongoEventsRepo();
+        volunteersRepo = new MongoVolunteersRepo();
+        rsvpsRepo = new MongoRsvpsRepo();
+        io:println("MongoDB Atlas repos initialized ✅");
+        
+        // Optional test snippet - insert a sample event and list all events
+        EventInput testEvent = {
+            title: "Community Garden Cleanup",
+            description: "Help clean up the local community garden",
+            date: "2025-09-01",
+            location: "Central Park",
+            skills: ["gardening", "cleaning"],
+            slots: 10
+        };
+        
+        Event|error result = eventsRepo.create(testEvent);
+        if result is Event {
+            io:println("✅ Test event created with ID: " + result.id);
+        } else {
+            io:println("❌ Failed to create test event: " + result.message());
+        }
+        
+        Event[] events = eventsRepo.list();
+        io:println("📋 Total events in Atlas: " + events.length().toString());
+    } else {
+        io:println("InMemory repos initialized ✅");
+    }
     
     // Start HTTP service
     _ = check new http:Listener(8090);
