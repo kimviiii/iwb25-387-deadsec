@@ -20,9 +20,16 @@ class FileJsonEventsRepo {
         self.dataStore = check self.loadData();
     }
 
-    function create(Event e) returns Event|error {
-        Event newE = e.clone();
-        newE.id = uuid:createType4AsString();
+    function create(EventInput e) returns Event|error {
+        Event newE = {
+            id: uuid:createType4AsString(),
+            title: e.title,
+            description: e.description,
+            date: e.date,
+            location: e.location,
+            skills: e.skills,
+            slots: e.slots
+        };
         self.dataStore.events.push(newE);
         check self.saveData();
         return newE;
@@ -85,9 +92,14 @@ class FileJsonVolunteersRepo {
         self.dataStore = check self.loadData();
     }
 
-    function create(Volunteer v) returns Volunteer|error {
-        Volunteer newV = v.clone();
-        newV.id = uuid:createType4AsString();
+    function create(VolunteerInput v) returns Volunteer|error {
+        Volunteer newV = {
+            id: uuid:createType4AsString(),
+            name: v.name,
+            skills: v.skills,
+            location: v.location,
+            availability: v.availability
+        };
         self.dataStore.volunteers.push(newV);
         check self.saveData();
         return newV;
@@ -148,15 +160,18 @@ class FileJsonRsvpsRepo {
         self.dataStore = check self.loadData();
     }
 
-    function create(Rsvp r) returns Rsvp|error {
+    function create(RsvpInput r) returns Rsvp|error {
         // Check for duplicates first
         if self.exists(r.volunteerId, r.eventId) {
             return error("RSVP already exists for this volunteer and event");
         }
 
-        Rsvp newR = r.clone();
-        newR.id = uuid:createType4AsString();
-        newR.createdAt = time:utcToString(time:utcNow());
+        Rsvp newR = {
+            id: uuid:createType4AsString(),
+            volunteerId: r.volunteerId,
+            eventId: r.eventId,
+            createdAt: time:utcToString(time:utcNow())
+        };
         self.dataStore.rsvps.push(newR);
         check self.saveData();
         return newR;

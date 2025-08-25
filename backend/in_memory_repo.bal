@@ -7,9 +7,16 @@ class InMemoryEventsRepo {
 
     *EventsRepo;
 
-    function create(Event e) returns Event|error {
-        Event newE = e.clone();
-        newE.id = uuid:createType4AsString(); // use UUID v4 for simplicity
+    function create(EventInput e) returns Event|error {
+        Event newE = {
+            id: uuid:createType4AsString(),
+            title: e.title,
+            description: e.description,
+            date: e.date,
+            location: e.location,
+            skills: e.skills,
+            slots: e.slots
+        };
         self.events.push(newE);
         return newE;
     }
@@ -34,9 +41,14 @@ class InMemoryVolunteersRepo {
 
     *VolunteersRepo;
 
-    function create(Volunteer v) returns Volunteer|error {
-        Volunteer newV = v.clone();
-        newV.id = uuid:createType4AsString();
+    function create(VolunteerInput v) returns Volunteer|error {
+        Volunteer newV = {
+            id: uuid:createType4AsString(),
+            name: v.name,
+            skills: v.skills,
+            location: v.location,
+            availability: v.availability
+        };
         self.volunteers.push(newV);
         return newV;
     }
@@ -61,15 +73,18 @@ class InMemoryRsvpsRepo {
 
     *RsvpsRepo;
 
-    function create(Rsvp r) returns Rsvp|error {
+    function create(RsvpInput r) returns Rsvp|error {
         // Check for duplicates first
         if self.exists(r.volunteerId, r.eventId) {
             return error("RSVP already exists for this volunteer and event");
         }
 
-        Rsvp newR = r.clone();
-        newR.id = uuid:createType4AsString();
-        newR.createdAt = time:utcToString(time:utcNow()); // use correct formatter
+        Rsvp newR = {
+            id: uuid:createType4AsString(),
+            volunteerId: r.volunteerId,
+            eventId: r.eventId,
+            createdAt: time:utcToString(time:utcNow())
+        };
         self.rsvps.push(newR);
         return newR;
     }

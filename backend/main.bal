@@ -23,7 +23,7 @@ service / on new http:Listener(8090) {
     }
 
     // Events endpoints
-    resource function post events(Event event) returns Event|http:BadRequest|http:InternalServerError {
+    resource function post events(EventInput event) returns Event|http:BadRequest|http:InternalServerError {
         Event|error result = eventsRepo.create(event);
         if result is error {
             return <http:InternalServerError>{body: {"error": result.message()}};
@@ -44,7 +44,7 @@ service / on new http:Listener(8090) {
     }
 
     // Volunteers endpoints
-    resource function post volunteers(Volunteer volunteer) returns Volunteer|http:BadRequest|http:InternalServerError {
+    resource function post volunteers(VolunteerInput volunteer) returns Volunteer|http:BadRequest|http:InternalServerError {
         Volunteer|error result = volunteersRepo.create(volunteer);
         if result is error {
             return <http:InternalServerError>{body: {"error": result.message()}};
@@ -83,11 +83,9 @@ service / on new http:Listener(8090) {
         }
 
         // Create RSVP
-        Rsvp newRsvp = {
-            id: "", // Will be set by repo
+        RsvpInput newRsvp = {
             volunteerId: rsvpReq.volunteerId,
-            eventId: rsvpReq.eventId,
-            createdAt: "" // Will be set by repo
+            eventId: rsvpReq.eventId
         };
 
         Rsvp|error result = rsvpsRepo.create(newRsvp);
@@ -113,9 +111,10 @@ service / on new http:Listener(8090) {
 
         foreach Event event in events {
             int score = calculateMatchScore(volunteer, event);
-            if score > 0 {
+            if score > 0 && event.id is string {
+                string eventId = event.id;
                 MatchResult matchResult = {
-                    eventId: event.id,
+                    eventId: eventId,
                     event: event,
                     score: score,
                     breakdown: generateMatchBreakdown(volunteer, event)
