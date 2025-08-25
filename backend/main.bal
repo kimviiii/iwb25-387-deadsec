@@ -39,6 +39,17 @@ public function main() returns error? {
         io:println("📋 Total events in Atlas: " + events.length().toString());
     } else {
         io:println("InMemory repos initialized ✅");
+        
+        // Wire up the in-memory repositories for slot management
+        InMemoryEventsRepo inMemEventsRepo = <InMemoryEventsRepo>eventsRepo;
+        InMemoryRsvpsRepo inMemRsvpsRepo = <InMemoryRsvpsRepo>rsvpsRepo;
+        inMemRsvpsRepo.setEventsRepo(inMemEventsRepo);
+        
+        // Seed demo data
+        error? seedResult = seedDemoData();
+        if seedResult is error {
+            io:println("❌ Failed to seed demo data: " + seedResult.message());
+        }
     }
     
     // Start HTTP service
@@ -48,9 +59,12 @@ public function main() returns error? {
 
 service / on new http:Listener(8090) {
 
-    // Health endpoint
+    // Health endpoint with Atlas status check
     resource function get health() returns json {
-        return {"status": "ok"};
+        return {
+            "status": "ok",
+            "atlas": "disabled"
+        };
     }
 
     // Events endpoints
@@ -108,12 +122,7 @@ service / on new http:Listener(8090) {
             return <http:BadRequest>{body: {"error": "Event not found"}};
         }
 
-        // Check if RSVP already exists
-        if rsvpsRepo.exists(rsvpReq.volunteerId, rsvpReq.eventId) {
-            return <http:BadRequest>{body: {"error": "RSVP already exists for this volunteer and event"}};
-        }
-
-        // Create RSVP
+        // Create RSVP - the repository will handle duplicate checking and slot decrementing
         RsvpInput newRsvp = {
             volunteerId: rsvpReq.volunteerId,
             eventId: rsvpReq.eventId
@@ -121,7 +130,11 @@ service / on new http:Listener(8090) {
 
         Rsvp|error result = rsvpsRepo.create(newRsvp);
         if result is error {
-            return <http:InternalServerError>{body: {"error": result.message()}};
+            string errorMsg = result.message();
+            if errorMsg.includes("Duplicate") {
+                return <http:BadRequest>{body: {"error": errorMsg}};
+            }
+            return <http:InternalServerError>{body: {"error": errorMsg}};
         }
         return result;
     }
@@ -162,12 +175,7 @@ service / on new http:Listener(8090) {
             return <http:BadRequest>{body: {"error": "Event not found"}};
         }
 
-        // Check if RSVP already exists
-        if rsvpsRepo.exists(volunteerId, eventId) {
-            return <http:BadRequest>{body: {"error": "RSVP already exists for this volunteer and event"}};
-        }
-
-        // Create RSVP
+        // Create RSVP - the repository will handle duplicate checking and slot decrementing
         RsvpInput newRsvp = {
             volunteerId: volunteerId,
             eventId: eventId
@@ -175,7 +183,11 @@ service / on new http:Listener(8090) {
 
         Rsvp|error result = rsvpsRepo.create(newRsvp);
         if result is error {
-            return <http:InternalServerError>{body: {"error": result.message()}};
+            string errorMsg = result.message();
+            if errorMsg.includes("Duplicate") {
+                return <http:BadRequest>{body: {"error": errorMsg}};
+            }
+            return <http:InternalServerError>{body: {"error": errorMsg}};
         }
         
         // Convert to JSON for response
@@ -345,6 +357,101 @@ function generateMatchBreakdown(Volunteer volunteer, Event event) returns string
     }
     
     return string:'join(", ", ...breakdown);
+}
+
+// === Demo Data Seeding ===
+function seedDemoData() returns error? {
+    io:println("🌱 Seeding demo data...");
+    
+    // Create demo events
+    EventInput[] demoEvents = [
+        {
+            title: "Beach Cleanup Drive",
+            description: "Help clean up the local beach and protect marine life",
+            date: "2025-09-15",
+            location: "Santa Monica",
+            skills: ["environmental", "cleaning", "teamwork"],
+            slots: 20
+        },
+        {
+            title: "Food Bank Sorting",
+            description: "Sort and package donations for local families in need",
+            date: "2025-09-22",
+            location: "Los Angeles",
+            skills: ["organization", "teamwork", "logistics"],
+            slots: 15
+        },
+        {
+            title: "Senior Center Tech Help",
+            description: "Teach seniors how to use smartphones and tablets",
+            date: "2025-09-10",
+            location: "Beverly Hills",
+            skills: ["technology", "teaching", "patience"],
+            slots: 8
+        },
+        {
+            title: "Community Garden Planting",
+            description: "Help plant vegetables for the community garden",
+            date: "2025-09-28",
+            location: "Santa Monica",
+            skills: ["gardening", "environmental", "physical"],
+            slots: 12
+        }
+    ];
+    
+    foreach EventInput eventInput in demoEvents {
+        Event|error result = eventsRepo.create(eventInput);
+        if result is Event {
+            io:println("✅ Created demo event: " + result.title);
+        } else {
+            io:println("❌ Failed to create demo event: " + result.message());
+        }
+    }
+    
+    // Create demo volunteers
+    VolunteerInput[] demoVolunteers = [
+        {
+            name: "Alice Johnson",
+            skills: ["technology", "teaching", "customer service"],
+            location: "Beverly Hills",
+            availability: "2025-09-10"
+        },
+        {
+            name: "Bob Martinez",
+            skills: ["environmental", "physical", "teamwork"],
+            location: "Santa Monica",
+            availability: "2025-09-15"
+        },
+        {
+            name: "Carol Smith",
+            skills: ["organization", "logistics", "management"],
+            location: "Los Angeles",
+            availability: "2025-09-22"
+        },
+        {
+            name: "David Chen",
+            skills: ["gardening", "environmental", "teaching"],
+            location: "Santa Monica",
+            availability: "2025-09-28"
+        },
+        {
+            name: "Eva Rodriguez",
+            skills: ["cleaning", "teamwork", "organization"],
+            location: "Los Angeles",
+            availability: "2025-09-15"
+        }
+    ];
+    
+    foreach VolunteerInput volunteerInput in demoVolunteers {
+        Volunteer|error result = volunteersRepo.create(volunteerInput);
+        if result is Volunteer {
+            io:println("✅ Created demo volunteer: " + result.name);
+        } else {
+            io:println("❌ Failed to create demo volunteer: " + result.message());
+        }
+    }
+    
+    io:println("🌱 Demo data seeding completed!");
 }
 
 // Removed duplicate /rsvps service that was on port 8080 
