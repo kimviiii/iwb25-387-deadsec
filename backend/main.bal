@@ -1,13 +1,13 @@
 import ballerina/io;
 import ballerina/http;
 
+// Initialize repositories with in-memory implementations
 EventsRepo eventsRepo = new InMemoryEventsRepo();
 VolunteersRepo volunteersRepo = new InMemoryVolunteersRepo();
 RsvpsRepo rsvpsRepo = new InMemoryRsvpsRepo();
 
 public function main() returns error? {
-    // init repos with in-memory implementations
-    // TODO: Allow easy swap to FileJsonRepo later
+    // Log which repositories are being used
     io:println("InMemory repos initialized ✅");
     
     // Start HTTP service
@@ -98,6 +98,63 @@ service / on new http:Listener(8090) {
     resource function get rsvps() returns Rsvp[] {
         return rsvpsRepo.list();
     }
+    
+    resource function post rsvps(@http:Payload json payload) returns json|http:BadRequest|http:InternalServerError {
+        // Extract data from payload
+        string volunteerId;
+        string eventId;
+        
+        // Extract fields with error handling
+        var vid = payload.volunteerId;
+        var eid = payload.eventId;
+        
+        if vid is string {
+            volunteerId = vid;
+        } else {
+            return <http:BadRequest>{body: {"error": "Invalid volunteerId"}};
+        }
+        
+        if eid is string {
+            eventId = eid;
+        } else {
+            return <http:BadRequest>{body: {"error": "Invalid eventId"}};
+        }
+        
+        // Validate that volunteer and event exist
+        Volunteer? volunteer = volunteersRepo.getById(volunteerId);
+        if volunteer is () {
+            return <http:BadRequest>{body: {"error": "Volunteer not found"}};
+        }
+
+        Event? event = eventsRepo.getById(eventId);
+        if event is () {
+            return <http:BadRequest>{body: {"error": "Event not found"}};
+        }
+
+        // Check if RSVP already exists
+        if rsvpsRepo.exists(volunteerId, eventId) {
+            return <http:BadRequest>{body: {"error": "RSVP already exists for this volunteer and event"}};
+        }
+
+        // Create RSVP
+        RsvpInput newRsvp = {
+            volunteerId: volunteerId,
+            eventId: eventId
+        };
+
+        Rsvp|error result = rsvpsRepo.create(newRsvp);
+        if result is error {
+            return <http:InternalServerError>{body: {"error": result.message()}};
+        }
+        
+        // Convert to JSON for response
+        return {
+            "id": result.id,
+            "volunteerId": result.volunteerId,
+            "eventId": result.eventId,
+            "createdAt": result.createdAt
+        };
+    }
 
     // Matching endpoint
     resource function get 'match(string volunteerId) returns MatchResult[]|http:BadRequest {
@@ -147,10 +204,44 @@ service / on new http:Listener(8090) {
 
     // Export endpoint (for debugging/backup)
     resource function get export() returns json {
+        json[] eventsJson = [];
+        foreach Event event in eventsRepo.list() {
+            eventsJson.push({
+                "id": event.id,
+                "title": event.title,
+                "description": event.description,
+                "date": event.date,
+                "location": event.location,
+                "skills": event.skills,
+                "slots": event.slots
+            });
+        }
+        
+        json[] volunteersJson = [];
+        foreach Volunteer volunteer in volunteersRepo.list() {
+            volunteersJson.push({
+                "id": volunteer.id,
+                "name": volunteer.name,
+                "skills": volunteer.skills,
+                "location": volunteer.location,
+                "availability": volunteer.availability
+            });
+        }
+        
+        json[] rsvpsJson = [];
+        foreach Rsvp rsvp in rsvpsRepo.list() {
+            rsvpsJson.push({
+                "id": rsvp.id,
+                "volunteerId": rsvp.volunteerId,
+                "eventId": rsvp.eventId,
+                "createdAt": rsvp.createdAt
+            });
+        }
+        
         return {
-            "events": eventsRepo.list().toJson(),
-            "volunteers": volunteersRepo.list().toJson(),
-            "rsvps": rsvpsRepo.list().toJson()
+            "events": eventsJson,
+            "volunteers": volunteersJson,
+            "rsvps": rsvpsJson
         };
     }
 
@@ -224,3 +315,6 @@ function generateMatchBreakdown(Volunteer volunteer, Event event) returns string
     
     return string:'join(", ", ...breakdown);
 }
+
+// Removed duplicate /rsvps service that was on port 8080 
+// All RSVP endpoints are now in the main service on port 8090
