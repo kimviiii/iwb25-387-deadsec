@@ -28,6 +28,7 @@ public function main() returns error? {
             slots: 10
         };
         
+        
         Event|error result = eventsRepo.create(testEvent);
         if result is Event {
             io:println("✅ Test event created with ID: " + result.id);
@@ -49,6 +50,9 @@ public function main() returns error? {
         error? seedResult = seedDemoData();
         if seedResult is error {
             io:println("❌ Failed to seed demo data: " + seedResult.message());
+        } else {
+            // Test the score function with demo data
+            testScoreFunction();
         }
     }
     
@@ -200,49 +204,58 @@ service / on new http:Listener(8090) {
     }
 
     // Matching endpoint
-    resource function get 'match(string volunteerId) returns MatchResult[]|http:BadRequest {
+    resource function get 'match(string volunteerId) returns json[]|http:NotFound|http:InternalServerError {
+        // Look up the volunteer by ID
         Volunteer? volunteer = volunteersRepo.getById(volunteerId);
         if volunteer is () {
-            return <http:BadRequest>{body: {"error": "Volunteer not found"}};
+            return <http:NotFound>{body: {"error": "Volunteer not found"}};
         }
 
+        // Get all events from EventsRepo
         Event[] events = eventsRepo.list();
-        MatchResult[] matches = [];
-
-        foreach Event event in events {
-            int score = calculateMatchScore(volunteer, event);
-            if score > 0 && event.id is string {
-                string eventId = event.id;
-                MatchResult matchResult = {
-                    eventId: eventId,
-                    event: event,
-                    score: score,
-                    breakdown: generateMatchBreakdown(volunteer, event)
-                };
-                matches.push(matchResult);
-            }
+        
+        // If no events, return empty array
+        if events.length() == 0 {
+            return [];
         }
 
-        // Sort by score descending and return top 5
-        // Simple bubble sort to avoid complex array operations
-        int n = matches.length();
+        // Build list of results for each event
+        json[] results = [];
+        foreach Event event in events {
+            // Call the existing score function
+            MatchScore matchScore = score(volunteer, event);
+            
+            // Build result with required fields
+            json result = {
+                "eventId": event.id,
+                "title": event.title,
+                "score": matchScore.score,
+                "why": matchScore.why
+            };
+            results.push(result);
+        }
+
+        // Sort results by score in descending order using bubble sort
+        int n = results.length();
         foreach int i in 0 ..< n-1 {
             foreach int j in 0 ..< n-i-1 {
-                if matches[j].score < matches[j+1].score {
-                    MatchResult temp = matches[j];
-                    matches[j] = matches[j+1];
-                    matches[j+1] = temp;
+                json current = results[j];
+                json next = results[j+1];
+                
+                // Extract scores for comparison - handle potential errors
+                var currentScoreVal = current.score;
+                var nextScoreVal = next.score;
+                
+                if currentScoreVal is int && nextScoreVal is int {
+                    if currentScoreVal < nextScoreVal {
+                        results[j] = next;
+                        results[j+1] = current;
+                    }
                 }
             }
         }
         
-        // Return top 5
-        MatchResult[] topMatches = [];
-        int maxResults = n < 5 ? n : 5;
-        foreach int i in 0 ..< maxResults {
-            topMatches.push(matches[i]);
-        }
-        return topMatches;
+        return results;
     }
 
     // Export endpoint (for debugging/backup)
@@ -357,6 +370,139 @@ function generateMatchBreakdown(Volunteer volunteer, Event event) returns string
     }
     
     return string:'join(", ", ...breakdown);
+}
+
+// New score function that returns MatchScore with total and breakdown
+function score(Volunteer volunteer, Event event) returns MatchScore {
+    int totalScore = 0;
+    string[] breakdownParts = [];
+    int skillMatches = 0;
+    
+    // Count overlapping skills (+4 each)
+    foreach string vSkill in volunteer.skills {
+        foreach string eSkill in event.skills {
+            if vSkill.toLowerAscii() == eSkill.toLowerAscii() {
+                skillMatches += 1;
+            }
+        }
+    }
+    
+    if skillMatches > 0 {
+        int skillPoints = skillMatches * 4;
+        totalScore += skillPoints;
+        breakdownParts.push(string `${skillMatches} skills (+${skillPoints})`);
+    }
+    
+    // Same city bonus (+5)
+    if volunteer.location.toLowerAscii() == event.location.toLowerAscii() {
+        totalScore += 5;
+        breakdownParts.push("same city (+5)");
+    }
+    
+    // Date match bonus (+3)
+    if volunteer.availability == event.date {
+        totalScore += 3;
+        breakdownParts.push("date match (+3)");
+    }
+    
+    // Slots available bonus (+1)
+    if event.slots > 0 {
+        totalScore += 1;
+        breakdownParts.push("slots available (+1)");
+    }
+    
+    string why = string:'join(", ", ...breakdownParts);
+    if why.length() > 0 {
+        why = why + string ` = ${totalScore}`;
+    } else {
+        why = string `No matches = ${totalScore}`;
+    }
+    
+    return {
+        score: totalScore,
+        why: why
+    };
+}
+
+// Example usage / test function for the score function
+function testScoreFunction() {
+    io:println("\n🧪 Testing Score Function...");
+    io:println("==================================================");
+    
+    // Test Case 1: Good match
+    io:println("\n📋 Test Case 1: Good Match");
+    Volunteer volunteer1 = {
+        id: "vol1",
+        name: "John Doe",
+        skills: ["environmental", "teamwork"],
+        location: "Santa Monica",
+        availability: "2025-09-15"
+    };
+    
+    Event event1 = {
+        id: "evt1", 
+        title: "Beach Cleanup",
+        description: "Help clean up the beach",
+        date: "2025-09-15",
+        location: "Santa Monica",
+        skills: ["environmental", "cleaning"],
+        slots: 5
+    };
+    
+    MatchScore result1 = score(volunteer1, event1);
+    io:println(string `✅ Score: ${result1.score}`);
+    io:println(string `📝 Breakdown: ${result1.why}`);
+    
+    // Test Case 2: Perfect match
+    io:println("\n📋 Test Case 2: Perfect Match");
+    Volunteer volunteer2 = {
+        id: "vol2",
+        name: "Alice Smith",
+        skills: ["teaching", "mentoring", "communication"],
+        location: "Boston",
+        availability: "2025-09-20"
+    };
+    
+    Event event2 = {
+        id: "evt2", 
+        title: "Youth Mentoring",
+        description: "Mentor young students",
+        date: "2025-09-20",
+        location: "Boston",
+        skills: ["teaching", "mentoring"],
+        slots: 10
+    };
+    
+    MatchScore result2 = score(volunteer2, event2);
+    io:println(string `✅ Score: ${result2.score}`);
+    io:println(string `📝 Breakdown: ${result2.why}`);
+    
+    // Test Case 3: No match
+    io:println("\n📋 Test Case 3: Poor Match");
+    Volunteer volunteer3 = {
+        id: "vol3",
+        name: "Bob Jones",
+        skills: ["coding", "design"],
+        location: "New York",
+        availability: "2025-10-01"
+    };
+    
+    Event event3 = {
+        id: "evt3", 
+        title: "Garden Work",
+        description: "Physical garden maintenance",
+        date: "2025-09-15",
+        location: "Los Angeles",
+        skills: ["gardening", "physical"],
+        slots: 0
+    };
+    
+    MatchScore result3 = score(volunteer3, event3);
+    io:println(string `✅ Score: ${result3.score}`);
+    io:println(string `📝 Breakdown: ${result3.why}`);
+    
+    io:println("\n==================================================");
+    io:println("🎉 Score function testing complete!");
 }
 
 // === Demo Data Seeding ===
