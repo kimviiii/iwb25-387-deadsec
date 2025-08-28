@@ -1,5 +1,6 @@
 import ballerina/io;
 import ballerina/http;
+import ballerina/openapi;
 
 // Configuration
 configurable boolean USE_ATLAS = false;
@@ -61,9 +62,18 @@ public function main() returns error? {
     io:println("HTTP service started on port 8090 ✅");
 }
 
+@openapi:ServiceInfo {
+    title: "VoluntHere API",
+    'version: "1.0.0",
+    description: "Volunteer Match backend API"
+}
 service / on new http:Listener(8090) {
 
     // Health endpoint with Atlas status check
+    @openapi:ResourceInfo {
+        summary: "Health check endpoint",
+        tags: ["System"]
+    }
     resource function get health() returns json {
         return {
             "status": "ok",
@@ -72,6 +82,10 @@ service / on new http:Listener(8090) {
     }
 
     // Events endpoints
+    @openapi:ResourceInfo {
+        summary: "Create a new event",
+        tags: ["Events"]
+    }
     resource function post events(EventInput event) returns Event|http:BadRequest|http:InternalServerError {
         Event|error result = eventsRepo.create(event);
         if result is error {
@@ -80,10 +94,18 @@ service / on new http:Listener(8090) {
         return result;
     }
 
+    @openapi:ResourceInfo {
+        summary: "Get all events",
+        tags: ["Events"]
+    }
     resource function get events() returns Event[] {
         return eventsRepo.list();
     }
 
+    @openapi:ResourceInfo {
+        summary: "Get event by ID",
+        tags: ["Events"]
+    }
     resource function get events/[string id]() returns Event|http:NotFound {
         Event? event = eventsRepo.getById(id);
         if event is Event {
@@ -93,6 +115,10 @@ service / on new http:Listener(8090) {
     }
 
     // Volunteers endpoints
+    @openapi:ResourceInfo {
+        summary: "Create a new volunteer",
+        tags: ["Volunteers"]
+    }
     resource function post volunteers(VolunteerInput volunteer) returns Volunteer|http:BadRequest|http:InternalServerError {
         Volunteer|error result = volunteersRepo.create(volunteer);
         if result is error {
@@ -101,10 +127,18 @@ service / on new http:Listener(8090) {
         return result;
     }
 
+    @openapi:ResourceInfo {
+        summary: "Get all volunteers",
+        tags: ["Volunteers"]
+    }
     resource function get volunteers() returns Volunteer[] {
         return volunteersRepo.list();
     }
 
+    @openapi:ResourceInfo {
+        summary: "Get volunteer by ID",
+        tags: ["Volunteers"]
+    }
     resource function get volunteers/[string id]() returns Volunteer|http:NotFound {
         Volunteer? volunteer = volunteersRepo.getById(id);
         if volunteer is Volunteer {
@@ -114,6 +148,10 @@ service / on new http:Listener(8090) {
     }
 
     // RSVP endpoints
+    @openapi:ResourceInfo {
+        summary: "Create an RSVP for an event",
+        tags: ["RSVPs"]
+    }
     resource function post rsvp(RsvpRequest rsvpReq) returns Rsvp|http:BadRequest|http:InternalServerError {
         // Validate that volunteer and event exist
         Volunteer? volunteer = volunteersRepo.getById(rsvpReq.volunteerId);
@@ -143,10 +181,18 @@ service / on new http:Listener(8090) {
         return result;
     }
 
+    @openapi:ResourceInfo {
+        summary: "Get all RSVPs",
+        tags: ["RSVPs"]
+    }
     resource function get rsvps() returns Rsvp[] {
         return rsvpsRepo.list();
     }
     
+    @openapi:ResourceInfo {
+        summary: "Create an RSVP using JSON payload",
+        tags: ["RSVPs"]
+    }
     resource function post rsvps(@http:Payload json payload) returns json|http:BadRequest|http:InternalServerError {
         // Extract data from payload
         string volunteerId;
@@ -204,6 +250,10 @@ service / on new http:Listener(8090) {
     }
 
     // Matching endpoint
+    @openapi:ResourceInfo {
+        summary: "Get event matches for a volunteer",
+        tags: ["Matching"]
+    }
     resource function get 'match(string volunteerId) returns json[]|http:NotFound|http:InternalServerError {
         // Look up the volunteer by ID
         Volunteer? volunteer = volunteersRepo.getById(volunteerId);
@@ -259,6 +309,10 @@ service / on new http:Listener(8090) {
     }
 
     // Export endpoint (for debugging/backup)
+    @openapi:ResourceInfo {
+        summary: "Export all data for debugging and backup",
+        tags: ["Export"]
+    }
     resource function get export() returns json {
         json[] eventsJson = [];
         foreach Event event in eventsRepo.list() {
@@ -302,10 +356,403 @@ service / on new http:Listener(8090) {
     }
 
     // Reset endpoint (dev/demo only)
+    @openapi:ResourceInfo {
+        summary: "Reset all data (development only)",
+        tags: ["System"]
+    }
     resource function post reset() returns json {
         // Note: This would require adding a reset method to repos
         // For now, just return success
         return {"message": "Reset functionality not implemented yet"};
+    }
+
+    // OpenAPI spec endpoint
+    @openapi:ResourceInfo {
+        summary: "Get OpenAPI specification",
+        tags: ["System"]
+    }
+    resource function get openapi() returns json {
+        return {
+            "openapi": "3.0.1",
+            "info": {
+                "title": "VoluntHere API",
+                "version": "1.0.0",
+                "description": "Volunteer Match backend API - Connect volunteers with meaningful opportunities"
+            },
+            "tags": [
+                {
+                    "name": "System",
+                    "description": "System health and monitoring endpoints"
+                },
+                {
+                    "name": "Events",
+                    "description": "Event management operations"
+                },
+                {
+                    "name": "Volunteers",
+                    "description": "Volunteer management operations"
+                },
+                {
+                    "name": "RSVPs",
+                    "description": "RSVP and registration operations"
+                },
+                {
+                    "name": "Matching",
+                    "description": "Volunteer-event matching operations"
+                },
+                {
+                    "name": "Export",
+                    "description": "Data export and debugging operations"
+                }
+            ],
+            "paths": {
+                "/health": {
+                    "get": {
+                        "tags": ["System"],
+                        "summary": "Health check endpoint",
+                        "description": "Check if the service is running and healthy",
+                        "responses": {
+                            "200": {
+                                "description": "Service is healthy",
+                                "content": {
+                                    "application/json": {
+                                        "example": {
+                                            "status": "ok",
+                                            "atlas": "disabled"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "/events": {
+                    "get": {
+                        "tags": ["Events"],
+                        "summary": "Get all events",
+                        "description": "Retrieve a list of all available volunteer events",
+                        "responses": {
+                            "200": {
+                                "description": "List of events",
+                                "content": {
+                                    "application/json": {
+                                        "schema": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "example": [
+                                            {
+                                                "id": "evt_123",
+                                                "title": "Beach Cleanup Drive",
+                                                "description": "Help clean up the local beach and protect marine life",
+                                                "date": "2025-09-15",
+                                                "location": "Santa Monica",
+                                                "skills": ["environmental", "physical"],
+                                                "slots": 20
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "post": {
+                        "tags": ["Events"],
+                        "summary": "Create a new event",
+                        "description": "Create a new volunteer event",
+                        "requestBody": {
+                            "required": true,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["title", "description", "date", "location", "skills", "slots"],
+                                        "properties": {
+                                            "title": {"type": "string"},
+                                            "description": {"type": "string"},
+                                            "date": {"type": "string", "format": "date"},
+                                            "location": {"type": "string"},
+                                            "skills": {"type": "array", "items": {"type": "string"}},
+                                            "slots": {"type": "integer", "minimum": 1}
+                                        }
+                                    },
+                                    "example": {
+                                        "title": "Community Garden Planting",
+                                        "description": "Help plant vegetables for the community garden",
+                                        "date": "2025-09-28",
+                                        "location": "Central Park",
+                                        "skills": ["gardening", "environmental", "physical"],
+                                        "slots": 15
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "description": "Event created successfully",
+                                "content": {
+                                    "application/json": {
+                                        "example": {
+                                            "id": "evt_456",
+                                            "title": "Community Garden Planting",
+                                            "description": "Help plant vegetables for the community garden",
+                                            "date": "2025-09-28",
+                                            "location": "Central Park",
+                                            "skills": ["gardening", "environmental", "physical"],
+                                            "slots": 15
+                                        }
+                                    }
+                                }
+                            },
+                            "400": {
+                                "description": "Bad request - invalid input data"
+                            }
+                        }
+                    }
+                },
+                "/volunteers": {
+                    "get": {
+                        "tags": ["Volunteers"],
+                        "summary": "Get all volunteers",
+                        "description": "Retrieve a list of all registered volunteers",
+                        "responses": {
+                            "200": {
+                                "description": "List of volunteers",
+                                "content": {
+                                    "application/json": {
+                                        "example": [
+                                            {
+                                                "id": "vol_123",
+                                                "name": "Alice Johnson",
+                                                "skills": ["technology", "teaching", "customer service"],
+                                                "location": "Beverly Hills",
+                                                "availability": "2025-09-10"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "post": {
+                        "tags": ["Volunteers"],
+                        "summary": "Create a new volunteer",
+                        "description": "Register a new volunteer in the system",
+                        "requestBody": {
+                            "required": true,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["name", "skills", "location", "availability"],
+                                        "properties": {
+                                            "name": {"type": "string"},
+                                            "skills": {"type": "array", "items": {"type": "string"}},
+                                            "location": {"type": "string"},
+                                            "availability": {"type": "string", "format": "date"}
+                                        }
+                                    },
+                                    "example": {
+                                        "name": "John Smith",
+                                        "skills": ["environmental", "leadership", "communication"],
+                                        "location": "Santa Monica",
+                                        "availability": "2025-09-15"
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "description": "Volunteer created successfully"
+                            },
+                            "400": {
+                                "description": "Bad request - invalid input data"
+                            }
+                        }
+                    }
+                },
+                "/rsvp": {
+                    "post": {
+                        "tags": ["RSVPs"],
+                        "summary": "Create an RSVP (structured payload)",
+                        "description": "Create an RSVP using structured RsvpRequest object",
+                        "requestBody": {
+                            "required": true,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["volunteerId", "eventId"],
+                                        "properties": {
+                                            "volunteerId": {"type": "string"},
+                                            "eventId": {"type": "string"}
+                                        }
+                                    },
+                                    "example": {
+                                        "volunteerId": "vol_123",
+                                        "eventId": "evt_456"
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "description": "RSVP created successfully"
+                            },
+                            "400": {
+                                "description": "Bad request - volunteer or event not found, or duplicate RSVP"
+                            }
+                        }
+                    }
+                },
+                "/rsvps": {
+                    "get": {
+                        "tags": ["RSVPs"],
+                        "summary": "Get all RSVPs",
+                        "description": "Retrieve a list of all RSVPs",
+                        "responses": {
+                            "200": {
+                                "description": "List of RSVPs",
+                                "content": {
+                                    "application/json": {
+                                        "example": [
+                                            {
+                                                "id": "rsvp_789",
+                                                "volunteerId": "vol_123",
+                                                "eventId": "evt_456",
+                                                "createdAt": "2025-08-27T10:30:00Z"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "post": {
+                        "tags": ["RSVPs"],
+                        "summary": "Create an RSVP (JSON payload)",
+                        "description": "Create an RSVP using generic JSON payload - alternative endpoint with JSON response",
+                        "requestBody": {
+                            "required": true,
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["volunteerId", "eventId"],
+                                        "properties": {
+                                            "volunteerId": {"type": "string"},
+                                            "eventId": {"type": "string"}
+                                        }
+                                    },
+                                    "example": {
+                                        "volunteerId": "vol_123",
+                                        "eventId": "evt_456"
+                                    }
+                                }
+                            }
+                        },
+                        "responses": {
+                            "200": {
+                                "description": "RSVP created successfully",
+                                "content": {
+                                    "application/json": {
+                                        "example": {
+                                            "id": "rsvp_789",
+                                            "volunteerId": "vol_123",
+                                            "eventId": "evt_456",
+                                            "createdAt": "2025-08-27T10:30:00Z"
+                                        }
+                                    }
+                                }
+                            },
+                            "400": {
+                                "description": "Bad request - volunteer or event not found, or duplicate RSVP"
+                            }
+                        }
+                    }
+                },
+                "/match": {
+                    "get": {
+                        "tags": ["Matching"],
+                        "summary": "Get event matches for a volunteer",
+                        "description": "Find and rank events that match a volunteer's skills and availability",
+                        "parameters": [
+                            {
+                                "name": "volunteerId",
+                                "in": "query",
+                                "required": true,
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "description": "ID of the volunteer to match",
+                                "example": "vol_123"
+                            }
+                        ],
+                        "responses": {
+                            "200": {
+                                "description": "List of event matches ranked by score",
+                                "content": {
+                                    "application/json": {
+                                        "example": [
+                                            {
+                                                "eventId": "evt_456",
+                                                "title": "Beach Cleanup Drive",
+                                                "score": 17,
+                                                "why": "2 skills (+8), same city (+5), date match (+3), slots available (+1) = 17"
+                                            },
+                                            {
+                                                "eventId": "evt_789",
+                                                "title": "Food Bank Sorting",
+                                                "score": 13,
+                                                "why": "1 skills (+4), same city (+5), date match (+3), slots available (+1) = 13"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "404": {
+                                "description": "Volunteer not found"
+                            }
+                        }
+                    }
+                },
+                "/export": {
+                    "get": {
+                        "tags": ["Export"],
+                        "summary": "Export all data",
+                        "description": "Export all events, volunteers, and RSVPs for debugging and backup purposes",
+                        "responses": {
+                            "200": {
+                                "description": "Complete data export",
+                                "content": {
+                                    "application/json": {
+                                        "example": {
+                                            "events": [{"id": "evt_123", "title": "Sample Event"}],
+                                            "volunteers": [{"id": "vol_123", "name": "Sample Volunteer"}],
+                                            "rsvps": [{"id": "rsvp_123", "volunteerId": "vol_123", "eventId": "evt_123"}]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "/openapi": {
+                    "get": {
+                        "tags": ["System"],
+                        "summary": "Get OpenAPI specification",
+                        "description": "Retrieve the complete OpenAPI specification for this API",
+                        "responses": {
+                            "200": {
+                                "description": "OpenAPI specification in JSON format"
+                            }
+                        }
+                    }
+                }
+            }
+        };
     }
 }
 
