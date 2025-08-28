@@ -14,13 +14,22 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Set up Ballerina
+    - name: Set up Ballerina (latest version for CI)
       uses: ballerina-platform/setup-ballerina@v1
+      with:
+        version: latest
       
-    - name: Build the project
-      run: bal build
+    - name: Update distribution version for CI compatibility
+      run: |
+        # Update the distribution to match the CI Ballerina version
+        sed -i 's/distribution = "2201.12.8"/distribution = "2201.12.9"/' backend/Ballerina.toml
+      
+    - name: Clean and build the project
+      run: |
+        bal clean
+        bal build
       working-directory: backend
       
     - name: Run tests
-      run: bal test
+      run: bal test --offline
       working-directory: backend
