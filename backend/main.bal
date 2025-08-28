@@ -1,6 +1,35 @@
+import ballerinax/mongodb;
 import ballerina/io;
 import ballerina/http;
 import ballerina/openapi;
+import ballerina/crypto;
+import ballerina/jwt;
+import ballerina/time;
+
+// JWT secret config
+configurable string JWT_SECRET = ?;
+
+// === Auth Types ===
+public type RegisterRequest record {| string name; string email; string password; string role; |};
+public type LoginRequest record {| string email; string password; |};
+public type RegisterResponse record {| string message; string id; |};
+public type LoginResponse record {| string message; string token; UserProfile user; |};
+public type UserProfile record {| string id; string name; string email; string role; time:Utc createdAt; |};
+public type ErrorResponse record {| string message; int code; |};
+
+// === Auth Helper Functions ===
+function hashPassword(string password) returns string {
+    byte[] passwordBytes = password.toBytes();
+    byte[] hashedBytes = crypto:hashSha256(passwordBytes);
+    return hashedBytes.toBase64();
+}
+function verifyPassword(string password, string storedHash) returns boolean {
+    string hashedPassword = hashPassword(password);
+    return hashedPassword == storedHash;
+}
+function isValidEmail(string email) returns boolean {
+    return email.includes("@") && email.includes(".");
+}
 
 // Configuration
 configurable boolean USE_ATLAS = false;
@@ -77,6 +106,71 @@ public function main() returns error? {
     }
 }
 service / on new http:Listener(8090) {
+
+    // === AUTH ENDPOINTS ===
+    resource function post auth/register(RegisterRequest request) returns RegisterResponse|ErrorResponse|error {
+        if request.role != "volunteer" && request.role != "organizer" {
+            return <ErrorResponse>{message: "Invalid role. Must be 'volunteer' or 'organizer'", code: 400};
+        }
+        if !isValidEmail(request.email) {
+            return <ErrorResponse>{message: "Invalid email format", code: 400};
+        }
+        mongodb:Collection userCollection = check getUserCollection();
+        map<json> filter = {"email": request.email};
+        User? existingUser = check userCollection->findOne(filter);
+        if existingUser is User {
+            return <ErrorResponse>{message: "User with this email already exists", code: 409};
+        }
+        string passwordHash = hashPassword(request.password);
+        User newUser = {name: request.name, email: request.email, passwordHash: passwordHash, role: request.role, createdAt: time:utcNow()};
+        mongodb:Error? insertResult = userCollection->insertOne(newUser);
+        if insertResult is mongodb:Error {
+            return <ErrorResponse>{message: "Failed to create user: " + insertResult.message(), code: 500};
+        }
+        return <RegisterResponse>{message: "User registered successfully", id: "User created"};
+    }
+
+    resource function post auth/login(LoginRequest request) returns LoginResponse|ErrorResponse|error {
+        mongodb:Collection userCollection = check getUserCollection();
+        map<json> filter = {"email": request.email};
+        User? user = check userCollection->findOne(filter);
+        if user is () {
+            return <ErrorResponse>{message: "Invalid email or password", code: 401};
+        }
+        if !verifyPassword(request.password, user.passwordHash) {
+            return <ErrorResponse>{message: "Invalid email or password", code: 401};
+        }
+        jwt:IssuerConfig issuerConfig = {username: "volunthere", issuer: "volunthere", audience: ["volunthere-users"], keyId: "volunthere-key", customClaims: {"userId": user?._id ?: "", "email": user.email, "role": user.role}, expTime: 3600};
+        string token = check jwt:issue(issuerConfig);
+        UserProfile userProfile = {id: user?._id ?: "", name: user.name, email: user.email, role: user.role, createdAt: user.createdAt};
+        return <LoginResponse>{message: "Login successful", token: token, user: userProfile};
+    }
+
+    resource function get auth/me(http:Request req) returns UserProfile|ErrorResponse|error {
+        string|http:HeaderNotFoundError authHeader = req.getHeader("Authorization");
+        if authHeader is http:HeaderNotFoundError {
+            return <ErrorResponse>{message: "Authorization header required", code: 401};
+        }
+        string authHeaderStr = authHeader;
+        if !authHeaderStr.startsWith("Bearer ") {
+            return <ErrorResponse>{message: "Invalid authorization header format", code: 401};
+        }
+        string token = authHeaderStr.substring(7);
+        jwt:ValidatorConfig validatorConfig = {issuer: "volunthere", audience: ["volunthere-users"], signatureConfig: {secret: JWT_SECRET}};
+        jwt:Payload|jwt:Error payload = jwt:validate(token, validatorConfig);
+        if payload is jwt:Error {
+            return <ErrorResponse>{message: "Invalid or expired token", code: 401};
+        }
+        anydata userIdData = payload["userId"];
+        string userId = userIdData.toString();
+        mongodb:Collection userCollection = check getUserCollection();
+        map<json> filter = {"_id": {"$oid": userId}};
+        User? user = check userCollection->findOne(filter);
+        if user is () {
+            return <ErrorResponse>{message: "User not found", code: 404};
+        }
+        return <UserProfile>{id: user?._id ?: "", name: user.name, email: user.email, role: user.role, createdAt: user.createdAt};
+    }
 
     // Health endpoint with Atlas status check
     @openapi:ResourceInfo {
