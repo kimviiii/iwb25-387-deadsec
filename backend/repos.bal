@@ -64,6 +64,11 @@ type MatchResult record {
     string breakdown;
 };
 
+type MatchScore record {
+    int score;
+    string why;
+};
+
 // === Repository Contracts ===
 type EventsRepo object {
     function create(EventInput e) returns Event|error;

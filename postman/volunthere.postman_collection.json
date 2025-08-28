@@ -1,0 +1,936 @@
+{
+	"info": {
+		"_postman_id": "575546fa-c237-40fa-b202-dc0955cb44d7",
+		"name": "VoluntHere API",
+		"description": "Volunteer Match backend API - Connect volunteers with meaningful opportunities",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41479076",
+		"_collection_link": "https://interstellar-robot-161870.postman.co/workspace/Postman-API-Fundamentals-Studen~abc9b8c0-7048-47bf-b718-a8a955a7a7bf/collection/41479076-575546fa-c237-40fa-b202-dc0955cb44d7?action=share&source=collection_link&creator=41479076"
+	},
+	"item": [
+		{
+			"name": "health",
+			"item": [
+				{
+					"name": "Health check endpoint",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check if the service is running and healthy"
+					},
+					"response": [
+						{
+							"name": "Service is healthy",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/health",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"health"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"status\": \"ok\",\n  \"atlas\": \"disabled\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "events",
+			"item": [
+				{
+					"name": "Get all events",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/events",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"events"
+							]
+						},
+						"description": "Retrieve a list of all available volunteer events"
+					},
+					"response": [
+						{
+							"name": "List of events",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/events",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"events"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"id\": \"evt_123\",\n    \"title\": \"Beach Cleanup Drive\",\n    \"description\": \"Help clean up the local beach and protect marine life\",\n    \"date\": \"2025-09-15\",\n    \"location\": \"Santa Monica\",\n    \"skills\": [\n      \"environmental\",\n      \"physical\"\n    ],\n    \"slots\": 20\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "Create a new event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Community Garden Planting\",\n  \"description\": \"Help plant vegetables for the community garden\",\n  \"date\": \"2025-09-28\",\n  \"location\": \"Central Park\",\n  \"skills\": [\n    \"gardening\",\n    \"environmental\",\n    \"physical\"\n  ],\n  \"slots\": 15\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/events",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"events"
+							]
+						},
+						"description": "Create a new volunteer event"
+					},
+					"response": [
+						{
+							"name": "Event created successfully",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Community Garden Planting\",\n  \"description\": \"Help plant vegetables for the community garden\",\n  \"date\": \"2025-09-28\",\n  \"location\": \"Central Park\",\n  \"skills\": [\n    \"gardening\",\n    \"environmental\",\n    \"physical\"\n  ],\n  \"slots\": 15\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/events",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"events"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"evt_456\",\n  \"title\": \"Community Garden Planting\",\n  \"description\": \"Help plant vegetables for the community garden\",\n  \"date\": \"2025-09-28\",\n  \"location\": \"Central Park\",\n  \"skills\": [\n    \"gardening\",\n    \"environmental\",\n    \"physical\"\n  ],\n  \"slots\": 15\n}"
+						},
+						{
+							"name": "Bad request - invalid input data",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Community Garden Planting\",\n  \"description\": \"Help plant vegetables for the community garden\",\n  \"date\": \"2025-09-28\",\n  \"location\": \"Central Park\",\n  \"skills\": [\n    \"gardening\",\n    \"environmental\",\n    \"physical\"\n  ],\n  \"slots\": 15\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/events",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"events"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "volunteers",
+			"item": [
+				{
+					"name": "Get all volunteers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/volunteers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers"
+							]
+						},
+						"description": "Retrieve a list of all registered volunteers"
+					},
+					"response": [
+						{
+							"name": "List of volunteers",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/volunteers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"volunteers"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"id\": \"vol_123\",\n    \"name\": \"Alice Johnson\",\n    \"skills\": [\n      \"technology\",\n      \"teaching\",\n      \"customer service\"\n    ],\n    \"location\": \"Beverly Hills\",\n    \"availability\": \"2025-09-10\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "Create a new volunteer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Smith\",\n  \"skills\": [\n    \"environmental\",\n    \"leadership\",\n    \"communication\"\n  ],\n  \"location\": \"Santa Monica\",\n  \"availability\": \"2025-09-15\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/volunteers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"volunteers"
+							]
+						},
+						"description": "Register a new volunteer in the system"
+					},
+					"response": [
+						{
+							"name": "Volunteer created successfully",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"John Smith\",\n  \"skills\": [\n    \"environmental\",\n    \"leadership\",\n    \"communication\"\n  ],\n  \"location\": \"Santa Monica\",\n  \"availability\": \"2025-09-15\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/volunteers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"volunteers"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Bad request - invalid input data",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"John Smith\",\n  \"skills\": [\n    \"environmental\",\n    \"leadership\",\n    \"communication\"\n  ],\n  \"location\": \"Santa Monica\",\n  \"availability\": \"2025-09-15\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/volunteers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"volunteers"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "rsvp",
+			"item": [
+				{
+					"name": "Create an RSVP (structured payload)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"volunteerId\": \"vol_123\",\n  \"eventId\": \"evt_456\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/rsvp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rsvp"
+							]
+						},
+						"description": "Create an RSVP using structured RsvpRequest object"
+					},
+					"response": [
+						{
+							"name": "RSVP created successfully",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"volunteerId\": \"vol_123\",\n  \"eventId\": \"evt_456\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/rsvp",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"rsvp"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Bad request - volunteer or event not found, or duplicate RSVP",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"volunteerId\": \"vol_123\",\n  \"eventId\": \"evt_456\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/rsvp",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"rsvp"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "rsvps",
+			"item": [
+				{
+					"name": "Get all RSVPs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/rsvps",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rsvps"
+							]
+						},
+						"description": "Retrieve a list of all RSVPs"
+					},
+					"response": [
+						{
+							"name": "List of RSVPs",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/rsvps",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"rsvps"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"id\": \"rsvp_789\",\n    \"volunteerId\": \"vol_123\",\n    \"eventId\": \"evt_456\",\n    \"createdAt\": \"2025-08-27T10:30:00Z\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "Create an RSVP (JSON payload)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"volunteerId\": \"vol_123\",\n  \"eventId\": \"evt_456\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/rsvps",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rsvps"
+							]
+						},
+						"description": "Create an RSVP using generic JSON payload - alternative endpoint with JSON response"
+					},
+					"response": [
+						{
+							"name": "RSVP created successfully",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"volunteerId\": \"vol_123\",\n  \"eventId\": \"evt_456\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/rsvps",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"rsvps"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"rsvp_789\",\n  \"volunteerId\": \"vol_123\",\n  \"eventId\": \"evt_456\",\n  \"createdAt\": \"2025-08-27T10:30:00Z\"\n}"
+						},
+						{
+							"name": "Bad request - volunteer or event not found, or duplicate RSVP",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"volunteerId\": \"vol_123\",\n  \"eventId\": \"evt_456\"\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/rsvps",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"rsvps"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "match",
+			"item": [
+				{
+					"name": "Get event matches for a volunteer",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/match?volunteerId=vol_123",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"match"
+							],
+							"query": [
+								{
+									"key": "volunteerId",
+									"value": "vol_123",
+									"description": "(Required) ID of the volunteer to match"
+								}
+							]
+						},
+						"description": "Find and rank events that match a volunteer's skills and availability"
+					},
+					"response": [
+						{
+							"name": "List of event matches ranked by score",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/match?volunteerId=vol_123",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"match"
+									],
+									"query": [
+										{
+											"key": "volunteerId",
+											"value": "vol_123",
+											"description": "(Required) ID of the volunteer to match"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"eventId\": \"evt_456\",\n    \"title\": \"Beach Cleanup Drive\",\n    \"score\": 17,\n    \"why\": \"2 skills (+8), same city (+5), date match (+3), slots available (+1) = 17\"\n  },\n  {\n    \"eventId\": \"evt_789\",\n    \"title\": \"Food Bank Sorting\",\n    \"score\": 13,\n    \"why\": \"1 skills (+4), same city (+5), date match (+3), slots available (+1) = 13\"\n  }\n]"
+						},
+						{
+							"name": "Volunteer not found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/match?volunteerId=vol_123",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"match"
+									],
+									"query": [
+										{
+											"key": "volunteerId",
+											"value": "vol_123",
+											"description": "(Required) ID of the volunteer to match"
+										}
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "export",
+			"item": [
+				{
+					"name": "Export all data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/export",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"export"
+							]
+						},
+						"description": "Export all events, volunteers, and RSVPs for debugging and backup purposes"
+					},
+					"response": [
+						{
+							"name": "Complete data export",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/export",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"export"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"events\": [\n    {\n      \"id\": \"evt_123\",\n      \"title\": \"Sample Event\"\n    }\n  ],\n  \"volunteers\": [\n    {\n      \"id\": \"vol_123\",\n      \"name\": \"Sample Volunteer\"\n    }\n  ],\n  \"rsvps\": [\n    {\n      \"id\": \"rsvp_123\",\n      \"volunteerId\": \"vol_123\",\n      \"eventId\": \"evt_123\"\n    }\n  ]\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "openapi",
+			"item": [
+				{
+					"name": "Get OpenAPI specification",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/openapi",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"openapi"
+							]
+						},
+						"description": "Retrieve the complete OpenAPI specification for this API"
+					},
+					"response": [
+						{
+							"name": "OpenAPI specification in JSON format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/openapi",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"openapi"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [],
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8090"
+		}
+	]
+}

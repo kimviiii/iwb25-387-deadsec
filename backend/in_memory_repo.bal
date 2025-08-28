@@ -33,6 +33,30 @@ class InMemoryEventsRepo {
         }
         return ();
     }
+
+    // Method to decrement slot count when an RSVP is created
+    function decrementSlot(string eventId) returns error? {
+        foreach int i in 0 ..< self.events.length() {
+            if self.events[i].id == eventId {
+                if self.events[i].slots > 0 {
+                    Event updatedEvent = {
+                        id: self.events[i].id,
+                        title: self.events[i].title,
+                        description: self.events[i].description,
+                        date: self.events[i].date,
+                        location: self.events[i].location,
+                        skills: self.events[i].skills,
+                        slots: self.events[i].slots - 1
+                    };
+                    self.events[i] = updatedEvent;
+                    return ();
+                } else {
+                    return error("No available slots for this event");
+                }
+            }
+        }
+        return error("Event not found");
+    }
 }
 
 // ------------------- Volunteers Repo -------------------
@@ -70,13 +94,37 @@ class InMemoryVolunteersRepo {
 // ------------------- RSVPs Repo -------------------
 class InMemoryRsvpsRepo {
     private Rsvp[] rsvps = [];
+    private InMemoryEventsRepo? eventsRepo = ();
 
     *RsvpsRepo;
+
+    // Set reference to events repo for slot management
+    function setEventsRepo(InMemoryEventsRepo eventsRepo) {
+        self.eventsRepo = eventsRepo;
+    }
 
     function create(RsvpInput r) returns Rsvp|error {
         // Check for duplicates first
         if self.exists(r.volunteerId, r.eventId) {
-            return error("RSVP already exists for this volunteer and event");
+            return error("Duplicate RSVP: RSVP already exists for this volunteer and event");
+        }
+
+        // Check if event has available slots and decrement if so
+        if self.eventsRepo is InMemoryEventsRepo {
+            InMemoryEventsRepo repo = <InMemoryEventsRepo>self.eventsRepo;
+            Event? event = repo.getById(r.eventId);
+            if event is Event {
+                if event.slots <= 0 {
+                    return error("No available slots for this event");
+                }
+                // Decrement the slot count
+                error? result = repo.decrementSlot(r.eventId);
+                if result is error {
+                    return result;
+                }
+            } else {
+                return error("Event not found");
+            }
         }
 
         Rsvp newR = {

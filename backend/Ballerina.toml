@@ -6,3 +6,12 @@ distribution = "2201.12.8"
 
 [build-options]
 observabilityIncluded = true
+
+# Let Ballerina auto-resolve all dependencies
+# This should work better for different Ballerina versions
+
+# Temporarily commenting out MongoDB dependency due to download issues
+# [[dependency]]
+# org = "ballerinax"
+# name = "mongodb"
+# version = "3.0.0"
