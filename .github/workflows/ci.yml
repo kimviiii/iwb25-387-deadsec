@@ -20,10 +20,8 @@ jobs:
     - name: Check Ballerina version
       run: bal version
       
-    - name: Clean and build the project
-      run: |
-        bal clean
-        bal build
+    - name: Build the project
+      run: bal build
       working-directory: backend
       
     - name: Run tests
