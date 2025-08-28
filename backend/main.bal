@@ -11,9 +11,13 @@ VolunteersRepo volunteersRepo = new InMemoryVolunteersRepo();
 RsvpsRepo rsvpsRepo = new InMemoryRsvpsRepo();
 
 public function main() returns error? {
-    // Check configuration and initialize Atlas repositories if needed
+    // Initialize MongoDB for authentication if using Atlas
     if USE_ATLAS {
         io:println("🔄 Initializing MongoDB Atlas repos...");
+        
+        // Initialize MongoDB connection for authentication
+        check initMongoDB();
+        
         eventsRepo = new MongoEventsRepo();
         volunteersRepo = new MongoVolunteersRepo();
         rsvpsRepo = new MongoRsvpsRepo();

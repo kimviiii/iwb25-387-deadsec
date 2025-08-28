@@ -7,11 +7,22 @@ distribution = "2201.12.8"
 [build-options]
 observabilityIncluded = true
 
-# Let Ballerina auto-resolve all dependencies
-# This should work better for different Ballerina versions
+[[dependency]]
+org = "ballerinax"
+name = "mongodb"
+version = "5.2.2"
 
-# Temporarily commenting out MongoDB dependency due to download issues
-# [[dependency]]
-# org = "ballerinax"
-# name = "mongodb"
-# version = "3.0.0"
+[[dependency]]
+org = "ballerina"
+name = "crypto"
+version = "2.7.0"
+
+[[dependency]]
+org = "ballerina"
+name = "jwt"
+version = "2.15.0"
+
+[[dependency]]
+org = "ballerina"
+name = "time"
+version = "2.4.0"

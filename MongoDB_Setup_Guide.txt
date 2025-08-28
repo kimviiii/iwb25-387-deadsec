@@ -1,0 +1,313 @@
+================================================================================
+                    BALLERINA MONGODB SETUP GUIDE & TROUBLESHOOTING
+================================================================================
+
+This guide covers the complete process of setting up MongoDB with Ballerina,
+including common errors and their solutions.
+
+================================================================================
+1. MODULE IMPORT ISSUES & SOLUTIONS
+================================================================================
+
+COMMON ERRORS:
+- "cannot resolve module 'ballerinax/mongodb'"
+- "undefined module 'mongodb'"
+- "unknown type 'Client'"
+
+ROOT CAUSE:
+The MongoDB package wasn't properly installed/resolved in the project.
+
+SOLUTION PROCESS:
+❌ WRONG: bal add ballerinax/mongodb      # This fails with invalid syntax
+❌ WRONG: bal add ballerinax.mongodb      # Creates local module (not what we want)
+✅ CORRECT: bal pull ballerinax/mongodb   # Downloads from Ballerina Central
+
+KEY LEARNING:
+- Use 'bal pull <org>/<package>' to download packages from Ballerina Central
+- The 'bal add' command is for adding LOCAL modules to your project
+- Always check Ballerina.toml to ensure the dependency is correctly listed
+
+================================================================================
+2. CORRECT IMPORT SYNTAX
+================================================================================
+
+import ballerinax/mongodb;  // ✅ External MongoDB package
+import ballerina/time;      // ✅ Standard library for timestamps
+import ballerina/io;        // ✅ Standard library for I/O operations
+
+NOTES:
+- Use forward slashes (/) for package imports
+- Standard library modules use 'ballerina/' prefix
+- External packages use their organization name (e.g., 'ballerinax/')
+
+================================================================================
+3. MONGODB CONNECTION & CREDENTIALS
+================================================================================
+
+CONNECTION STRING STRUCTURE:
+mongodb:Client mongoDb = check new ({
+    connection: "mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority&appName=AppName"
+});
+
+COMPONENTS BREAKDOWN:
+- Protocol: mongodb+srv://        (for Atlas clusters)
+- Credentials: username:password@  (your MongoDB Atlas credentials)
+- Host: cluster.mongodb.net        (your cluster endpoint)
+- Options: ?retryWrites=true&w=majority&appName=AppName
+
+SECURITY BEST PRACTICES:
+❌ DON'T: Hardcode credentials in source code
+✅ DO: Use environment variables or config files in production
+✅ DO: Use connection pooling for better performance
+✅ DO: Enable SSL/TLS (Atlas does this by default)
+
+================================================================================
+4. WORKING WITH COLLECTIONS
+================================================================================
+
+DATABASE & COLLECTION ACCESS:
+// Get database reference
+mongodb:Database database = check mongoDb->getDatabase("database_name");
+
+// Get collection reference
+mongodb:Collection collection = check database->getCollection("collection_name");
+
+CRUD OPERATIONS:
+
+INSERT:
+mongodb:Error? insertResult = collection->insertOne(document);
+
+FIND ONE:
+User? user = check collection->findOne(filter);
+
+FIND MANY:
+stream<User, error?> users = check collection->find(filter);
+
+UPDATE:
+mongodb:UpdateResult|mongodb:Error updateResult = collection->updateOne(filter, update);
+
+DELETE:
+mongodb:DeleteResult|mongodb:Error deleteResult = collection->deleteOne(filter);
+
+CREATE INDEX:
+map<json> keys = {"email": 1};
+mongodb:CreateIndexOptions options = {"unique": true};
+_ = check collection->createIndex(keys, options);
+
+================================================================================
+5. TYPE SYSTEM CHALLENGES & SOLUTIONS
+================================================================================
+
+COMMON TYPE ERRORS:
+❌ WRONG:
+mongodb:InsertOneResult result = check userCollection->insertOne(newUser);
+// Error: incompatible types
+
+✅ CORRECT:
+mongodb:Error? result = userCollection->insertOne(newUser);
+if result is mongodb:Error {
+    return result;  // Handle error
+}
+
+KEY LEARNINGS:
+- Ballerina's type system is strict - always check return types
+- Use union types properly: Type|Error or Error?
+- Handle errors explicitly rather than assuming success
+- Use 'check' for error propagation or handle explicitly with if/else
+
+================================================================================
+6. ERROR HANDLING PATTERNS
+================================================================================
+
+PATTERN 1 - Return Error:
+function createUser(...) returns error? {
+    mongodb:Error? result = userCollection->insertOne(newUser);
+    if result is mongodb:Error {
+        return result;  // Propagate the error
+    }
+    return ();  // Success - return nil
+}
+
+PATTERN 2 - Handle Error Locally:
+function createUser(...) returns string|error {
+    mongodb:Error? result = userCollection->insertOne(newUser);
+    if result is mongodb:Error {
+        // Log or handle error
+        return error("Failed to create user: " + result.message());
+    }
+    return "User created successfully";
+}
+
+PATTERN 3 - Using Check (Auto-propagation):
+function createUser(...) returns error? {
+    // This will automatically propagate errors up the call stack
+    check userCollection->insertOne(newUser);
+    return ();
+}
+
+================================================================================
+7. RECORD TYPE DEFINITION
+================================================================================
+
+MONGODB USER SCHEMA:
+type User record {|
+    string? _id?;        // Optional MongoDB ObjectId
+    string name;         // Required field - user's full name
+    string email;        // Required field - unique email for login
+    string passwordHash; // Required field - hashed password (never plain text)
+    string role;         // Required field - "volunteer" or "organizer"
+    time:Utc createdAt;  // Required field - registration timestamp
+|};
+
+KEY POINTS:
+- Use {| |} for closed records (exact fields only)
+- Use ? to make fields optional
+- MongoDB _id is typically optional for inserts (auto-generated)
+- Always hash passwords before storing
+- Use proper data types (time:Utc for timestamps)
+
+================================================================================
+8. PROJECT STRUCTURE BEST PRACTICES
+================================================================================
+
+BALLERINA.TOML STRUCTURE:
+[package]
+org = "your_org"
+name = "project_name"
+version = "0.1.0"
+distribution = "2201.12.8"
+
+[build-options]
+observabilityIncluded = true
+
+[[dependency]]
+org = "ballerinax"
+name = "mongodb"
+version = "5.2.2"  # Use latest stable version
+
+DEPENDENCIES.TOML:
+- This file is auto-generated
+- DO NOT modify it manually
+- It tracks resolved dependency versions
+
+================================================================================
+9. MONGODB ATLAS CONNECTION VERIFICATION
+================================================================================
+
+SUCCESSFUL CONNECTION LOGS SHOW:
+- "MongoClient with metadata ... created with settings"
+- "Monitor thread successfully connected to server"
+- "Discovered replica set primary"
+- SSL/TLS encryption enabled
+- Proper authentication
+- Regional deployment details (e.g., AP_SOUTH_1)
+
+CONNECTION ISSUES TROUBLESHOOTING:
+1. Check network connectivity
+2. Verify MongoDB Atlas IP whitelist
+3. Confirm username/password in connection string
+4. Ensure cluster is running (not paused)
+5. Check if using correct connection string format
+
+================================================================================
+10. COMMON PITFALLS TO AVOID
+================================================================================
+
+1. DON'T mix local modules with external packages
+   - Use 'bal pull' for external packages
+   - Use 'bal add' only for local modules
+
+2. ALWAYS use 'check' for error propagation or handle explicitly
+   - Don't ignore potential errors
+   - Handle MongoDB operation failures gracefully
+
+3. VERIFY package versions in Ballerina Central before using
+   - Check compatibility with your Ballerina distribution
+   - Use stable versions in production
+
+4. HANDLE MongoDB's union return types properly
+   - Understand Type|Error patterns
+   - Use appropriate type guards
+
+5. CREATE indexes for frequently queried fields
+   - Unique index on email field prevents duplicates
+   - Improves query performance
+
+6. VALIDATE input data before database operations
+   - Check role values ("volunteer" or "organizer")
+   - Validate email format
+   - Ensure password is hashed
+
+================================================================================
+11. QUICK REFERENCE COMMANDS
+================================================================================
+
+PACKAGE MANAGEMENT:
+bal pull ballerinax/mongodb     # Download MongoDB package
+bal search mongodb              # Search for MongoDB packages
+bal build                       # Build project (resolves dependencies)
+bal run                         # Run the application
+
+PROJECT MANAGEMENT:
+bal new <project_name>          # Create new project
+bal add <module_name>           # Add local module
+bal test                        # Run tests
+bal doc                         # Generate documentation
+
+DEBUGGING:
+bal build --debug               # Build with debug info
+bal run --debug                 # Run with debug mode
+
+================================================================================
+12. DATABASE OPERATIONS EXAMPLES
+================================================================================
+
+CREATE USER:
+check createUser("John Doe", "john@example.com", "hashedPassword123", "volunteer");
+
+FIND USER BY EMAIL:
+User? user = check findUserByEmail("john@example.com");
+if user is User {
+    io:println("Found user: ", user.name);
+}
+
+UPDATE USER ROLE:
+check updateUserRole(userId, "organizer");
+
+CREATE UNIQUE EMAIL INDEX:
+check createEmailIndex();  // Run this once during setup
+
+================================================================================
+13. PRODUCTION CONSIDERATIONS
+================================================================================
+
+SECURITY:
+- Use environment variables for sensitive data
+- Implement proper authentication/authorization
+- Hash passwords using bcrypt or similar
+- Use HTTPS for all communications
+- Implement rate limiting
+
+PERFORMANCE:
+- Create appropriate database indexes
+- Use connection pooling
+- Implement caching where appropriate
+- Monitor database performance
+
+RELIABILITY:
+- Implement proper error handling
+- Use database transactions where needed
+- Set up monitoring and alerting
+- Implement backup strategies
+
+================================================================================
+
+This experience demonstrates Ballerina's strong type system and how it helps
+catch errors at compile time, ensuring more robust applications!
+
+For more information:
+- Ballerina Documentation: https://ballerina.io/learn/
+- MongoDB Ballerina Connector: https://central.ballerina.io/ballerinax/mongodb
+- MongoDB Atlas Documentation: https://docs.atlas.mongodb.com/
+
+================================================================================

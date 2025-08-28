@@ -4,9 +4,6 @@ import ballerina/log;
 import ballerina/uuid;
 import ballerina/time;
 
-// MongoDB Configuration
-configurable string MONGO_URI = "";
-
 // For now, we'll use a simulated MongoDB implementation
 // Once the MongoDB connector is available, this will be replaced
 
