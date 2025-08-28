@@ -57,8 +57,6 @@ public function main() returns error? {
         }
     }
     
-    // Start HTTP service
-    _ = check new http:Listener(8090);
     io:println("HTTP service started on port 8090 ✅");
 }
 
@@ -66,6 +64,13 @@ public function main() returns error? {
     title: "VoluntHere API",
     'version: "1.0.0",
     description: "Volunteer Match backend API"
+}
+@http:ServiceConfig {
+    cors: {
+        allowOrigins: ["*"],
+        allowMethods: ["GET", "POST", "OPTIONS"],
+        allowHeaders: ["*"]
+    }
 }
 service / on new http:Listener(8090) {
 

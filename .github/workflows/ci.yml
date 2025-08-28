@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Ballerina
+      uses: ballerina-platform/setup-ballerina@v1
+      
+    - name: Build the project
+      run: bal build
+      working-directory: backend
+      
+    - name: Run tests
+      run: bal test
+      working-directory: backend
