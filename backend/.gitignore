@@ -5,6 +5,6 @@ target/
 # Ballerina maintains the compiler-generated source code here.
 # Remove this if you want to commit generated sources.
 generated/
-
+secrets/
 # Contains configuration values used during development time.
 # See https://ballerina.io/learn/provide-values-to-configurable-variables/ for more details.
