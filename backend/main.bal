@@ -33,7 +33,7 @@ function isValidEmail(string email) returns boolean {
 
 // Configuration
 configurable boolean USE_ATLAS = false;
-
+// test 1
 // Global repository variables
 EventsRepo eventsRepo = new InMemoryEventsRepo();
 VolunteersRepo volunteersRepo = new InMemoryVolunteersRepo();
@@ -100,9 +100,10 @@ public function main() returns error? {
 }
 @http:ServiceConfig {
     cors: {
-        allowOrigins: ["*"],
-        allowMethods: ["GET", "POST", "OPTIONS"],
-        allowHeaders: ["*"]
+        allowOrigins: ["http://localhost:8080", "http://localhost:3000"],
+        allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+        allowCredentials: false
     }
 }
 service / on new http:Listener(8090) {

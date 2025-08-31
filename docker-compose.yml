@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8090:8090"
+    container_name: volunthere-backend
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - "8080:8080"
+    container_name: volunthere-client
+    depends_on:
+      - backend

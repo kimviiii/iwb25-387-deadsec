@@ -1,0 +1,3 @@
+# MongoDB Atlas Configuration
+USE_ATLAS=false
+MONGO_URI="mongodb+srv://kalanakivindu22:MBN6lcl6cmw8LqA2@cluster0.w8cz9oi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
