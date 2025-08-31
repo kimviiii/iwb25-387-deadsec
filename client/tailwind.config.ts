@@ -1,4 +1,6 @@
+import { fontFamily } from 'tailwindcss/defaultTheme';
 import type { Config } from "tailwindcss";
+
 
 export default {
 	darkMode: ["class"],
@@ -103,6 +105,11 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			fontFamily: {
+		sans: ['Nunito', ...fontFamily.sans],
+		serif: ['var(--font-serif)', ...fontFamily.serif],
+		mono: ['var(--font-mono)', ...fontFamily.mono],
 			}
 		}
 	},
