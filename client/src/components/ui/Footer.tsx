@@ -10,10 +10,10 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="flex space-x-6 mt-4 md:mt-0">
-          <a href="/about">About Us</a>
+          
           <a href="/events">Events</a>
           <a href="/register">Volunteer</a>
-          <a href="/contact">Contact</a>
+          
         </div>
 
         <div className="text-sm mt-4 md:mt-0">

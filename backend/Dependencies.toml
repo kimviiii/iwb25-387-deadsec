@@ -362,6 +362,10 @@ dependencies = [
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
-	{org = "kalana_kivindu", packageName = "backend", moduleName = "backend"}
+	{org = "kalana_kivindu", packageName = "backend", moduleName = "backend"},
+	{org = "kalana_kivindu", packageName = "backend", moduleName = "backend.auth"},
+	{org = "kalana_kivindu", packageName = "backend", moduleName = "backend.events"},
+	{org = "kalana_kivindu", packageName = "backend", moduleName = "backend.repos"},
+	{org = "kalana_kivindu", packageName = "backend", moduleName = "backend.utils"}
 ]
 
