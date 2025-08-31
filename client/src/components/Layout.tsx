@@ -1,11 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Heart, Calendar, Users, Plus, BarChart3 } from "lucide-react";
+import Footer from "./ui/Footer";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   
   const isActive = (path: string) => location.pathname === path;
+
+  const showFooterPages = ["/events", "/matches", "/register","/",];
+
   
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -77,6 +81,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+
+      {/* FOOTER (only on selected pages) */}
+      {showFooterPages.includes(location.pathname) && <Footer />}
+
     </div>
   );
 };
