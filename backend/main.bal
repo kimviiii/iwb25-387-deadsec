@@ -4,7 +4,7 @@ import ballerina/openapi;
 
 // Configuration
 configurable boolean USE_ATLAS = false;
-
+// test 1
 // Global repository variables
 EventsRepo eventsRepo = new InMemoryEventsRepo();
 VolunteersRepo volunteersRepo = new InMemoryVolunteersRepo();
