@@ -18,7 +18,7 @@ export const CreateEventForm = () => {
     title: "",
     description: "",
     date: "",
-    city: "",
+    location: "",
     slots: 1,
   });
   
@@ -48,10 +48,10 @@ export const CreateEventForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.date || !formData.city) {
+    if (!formData.title || !formData.date || !formData.location) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in title, date, and city",
+        description: "Please fill in title, date, and location",
         variant: "destructive",
       });
       return;
@@ -136,14 +136,14 @@ export const CreateEventForm = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="city" className="flex items-center gap-2">
+              <Label htmlFor="location" className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                City *
+                Location *
               </Label>
               <Input
-                id="city"
-                name="city"
-                value={formData.city}
+                id="location"
+                name="location"
+                value={formData.location}
                 onChange={handleInputChange}
                 placeholder="San Francisco"
                 required

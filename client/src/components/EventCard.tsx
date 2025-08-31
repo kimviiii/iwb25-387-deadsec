@@ -79,7 +79,7 @@ export const EventCard = ({ event, volunteers, onRsvpSuccess }: EventCardProps) 
         
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <MapPin className="h-4 w-4" />
-          <span>{event.city}</span>
+          <span>{event.location}</span>
         </div>
         
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -105,7 +105,7 @@ export const EventCard = ({ event, volunteers, onRsvpSuccess }: EventCardProps) 
             <SelectContent>
               {volunteers.map((volunteer) => (
                 <SelectItem key={volunteer.id} value={volunteer.id}>
-                  {volunteer.name} ({volunteer.city})
+                  {volunteer.name} ({volunteer.location})
                 </SelectItem>
               ))}
             </SelectContent>

@@ -14,7 +14,8 @@ export const VolunteerForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    city: "",
+    location: "",
+    availability: "",
   });
   
   const [skills, setSkills] = useState<string[]>([]);
@@ -43,10 +44,10 @@ export const VolunteerForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.city) {
+    if (!formData.name || !formData.location) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in name and city",
+        description: "Please fill in name and location",
         variant: "destructive",
       });
       return;
@@ -65,7 +66,7 @@ export const VolunteerForm = () => {
       });
       
       // Reset form
-      setFormData({ name: "", email: "", city: "" });
+      setFormData({ name: "", email: "", location: "", availability: "" });
       setSkills([]);
     } catch (error) {
       toast({
@@ -120,16 +121,31 @@ export const VolunteerForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="city" className="flex items-center gap-2">
+            <Label htmlFor="location" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              City *
+              Location *
             </Label>
             <Input
-              id="city"
-              name="city"
-              value={formData.city}
+              id="location"
+              name="location"
+              value={formData.location}
               onChange={handleInputChange}
               placeholder="San Francisco"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="availability" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Availability *
+            </Label>
+            <Input
+              id="availability"
+              name="availability"
+              type="date"
+              value={formData.availability}
+              onChange={handleInputChange}
               required
             />
           </div>

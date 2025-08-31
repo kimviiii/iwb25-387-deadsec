@@ -5,7 +5,7 @@ export interface Event {
   title: string;
   description?: string;
   date: string;
-  city: string;
+  location: string;
   skills: string[];
   slots: number;
   createdAt?: string;
@@ -15,8 +15,9 @@ export interface Volunteer {
   id: ID;
   name: string;
   email?: string;
-  city: string;
+  location: string;
   skills: string[];
+  availability: string;
   createdAt?: string;
 }
 
@@ -28,7 +29,8 @@ export interface Rsvp {
 }
 
 export interface MatchResult {
-  event: Event;
+  eventId: string;
+  title: string;
   score: number;
-  why: string[];
+  why: string;
 }
