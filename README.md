@@ -92,7 +92,41 @@ docker run -p 8090:8090 volunteer-match
 
 ---
 
-### 3. Connect to MongoDB Atlas
+### 3. Run with Docker Compose
+
+Build and start both **backend (Ballerina)** and **frontend (React + Vite)** services together:
+
+```bash
+docker compose up --build
+```
+
+This will:
+
+- Build the backend JAR and package it in a lightweight JRE container  
+- Build the frontend (TypeScript/React) into static files and serve via Nginx  
+- Create a shared Docker network and run both containers  
+
+When successful, you’ll see logs like:
+
+```
+volunthere-backend  | HTTP service started on port 8090 ✅
+volunthere-client   | nginx: start worker processes
+```
+
+Then visit:
+
+- **Backend API** → [http://localhost:8090/health](http://localhost:8090/health)  
+- **Frontend App** → [http://localhost:5173](http://localhost:5173) (or port set in `docker-compose.yml`)  
+
+To stop containers:
+
+```bash
+docker compose down
+```
+
+---
+
+### 4. Connect to MongoDB Atlas
 Set env vars (from your Atlas project):
 ```bash
 USE_ATLAS=true

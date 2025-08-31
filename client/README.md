@@ -1,73 +1,98 @@
-# Welcome to your Lovable project
+# Volunteer Match Frontend
 
-## Project info
+The **frontend** for the Volunteer Match platform — a simple React + TypeScript app styled with Tailwind CSS and shadcn-ui.  
+It connects to the backend API and provides pages for events, volunteers, matches, and registration.
 
-**URL**: https://lovable.dev/projects/c600d784-a0b7-4d62-a9a4-cb283b5935c8
+---
 
-## How can I edit this code?
+## ⚙️ Tech Stack
 
-There are several ways of editing your application.
+- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)  
+- **Language**: TypeScript  
+- **Styling**: Tailwind CSS + shadcn-ui  
+- **Build Tool**: Vite  
+- **Infra/DevX**: Works locally or via Docker Compose (see root README)
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c600d784-a0b7-4d62-a9a4-cb283b5935c8) and start prompting.
+## 🚀 Quickstart
 
-Changes made via Lovable will be committed automatically to this repo.
+### 1. Run Locally
 
-**Use your preferred IDE**
+Make sure you have **Node.js** & **npm** installed.  
+(Recommended: install via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Step 1: Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Step 2: Navigate to the frontend project
+cd volunteer-match/frontend
 
-# Step 3: Install the necessary dependencies.
+# Step 3: Install dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Start the dev server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit: [http://localhost:8090](http://localhost:8090)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+### 2. Run with Docker Compose
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+From the **project root** (not the frontend folder):
 
-## What technologies are used for this project?
+```bash
+docker compose up --build
+```
 
-This project is built with:
+This will build both backend and frontend together.  
+Frontend will be available at [http://localhost:8090](http://localhost:8090).
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 🛠 Editing the Code
 
-Simply open [Lovable](https://lovable.dev/projects/c600d784-a0b7-4d62-a9a4-cb283b5935c8) and click on Share -> Publish.
+- Open in your IDE (e.g., VS Code).  
+- Modify `.tsx` components inside `/src`.  
+- Changes auto-reload when running `npm run dev`.  
 
-## Can I connect a custom domain to my Lovable project?
+Alternatively:  
+- Edit files directly on GitHub and commit changes.  
+- Or use GitHub Codespaces to develop in the cloud.
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 📂 Repo Structure (Frontend)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```
+/frontend
+  ├── public        → Static assets
+  ├── src           → React source code (.tsx)
+  │    ├── pages    → App pages (Home, Events, Matches, etc.)
+  │    ├── components → UI components (EventCard, MatchList, etc.)
+  ├── index.html    → Entry HTML
+  ├── package.json  → Dependencies & scripts
+  └── vite.config.ts → Vite configuration
+```
+
+---
+
+## 🌐 Deployment
+
+You can deploy the frontend to any static hosting provider:  
+
+- **Vercel**  
+- **Netlify**  
+- **GitHub Pages**  
+- **Cloudflare Pages**  
+
+For production with backend, prefer **Docker Compose** deployment (see root README).
+
+---
+
+## 📝 License
+
+MIT
