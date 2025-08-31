@@ -36,7 +36,7 @@ npm i
 npm run dev
 ```
 
-Visit: [http://localhost:8090](http://localhost:8090)
+Visit: [http://localhost:8080](http://localhost:8080)
 
 ---
 
@@ -49,7 +49,7 @@ docker compose up --build
 ```
 
 This will build both backend and frontend together.  
-Frontend will be available at [http://localhost:8090](http://localhost:8090).
+Frontend will be available at [http://localhost:8080](http://localhost:8080).
 
 ---
 
